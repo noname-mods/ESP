@@ -4,6 +4,8 @@ A client-side Fabric mod that highlights mobs by reading the floating text label
 
 Built for Hypixel Skyblock, where almost everything worth finding wears a floating name plate.
 
+**GitHub:** <https://github.com/noname-mods/ESP>
+
 > **Requires [PlayerAPI](https://github.com/noname-mods/PlayerAPI) 1.12.0+, [Fabric API](https://modrinth.com/mod/fabric-api), and [YetAnotherConfigLib](https://modrinth.com/mod/yacl) to run.**
 > [ModMenu](https://modrinth.com/mod/modmenu) is optional — it adds a settings button to the mod list.
 
@@ -54,7 +56,7 @@ Once a mob is matched it stays highlighted even if its label briefly stops being
 Highlights every entity of the types you approve — independent of labels, the entity twin of Block ESP. Open the **Select Entity Types** screen from the Mob ESP config tab (searchable checkbox list of every entity type, Clear All). Matched entities get the same glow outline (through walls) and overlay (line of sight) as the label groups. Use this when you want "all zombies" rather than "the mob under a label that says X".
 
 ### Block ESP
-Highlights every instance of the block types you approve, **through walls**. Open the **Select Blocks** screen from the Block ESP config tab — a searchable list of every block in the game with a checkbox each, plus Clear All (selections save as you tick them). Configurable highlight colour, opacity, and scan radius. This is the flat "outline these blocks" layer; gemstone-style clustering, distance, and waypoints are planned on top of it (see the CHANGELOG).
+Highlights every instance of the block types you approve, **through walls**. Open the **Select Blocks** screen from the Block ESP config tab — a searchable list of every block in the game with a checkbox each, plus Clear All (selections save as you tick them). Configurable highlight colour, opacity, and scan radius.
 
 ---
 
@@ -98,7 +100,17 @@ ESP detects all of the above on world join and posts a one-time warning (a stron
 
 ---
 
+## Minecraft Version Support
+
+This mod targets **one Minecraft version at a time.** When it updates to a new Minecraft version, **previous versions receive zero further support** — no backports, no bug fixes, and a release is never published with support for multiple Minecraft versions at once.
+
+- Want the newest features? You must be on the mod's currently supported Minecraft version.
+- Want to stay on an older Minecraft version? Stay on that version's last release — it won't be updated.
+
+The in-game update checker is Minecraft-version aware: if the latest release targets a different Minecraft version than you're running, it tells you so instead of prompting you to install an incompatible build.
+
+---
+
 ## Notes
 
 - ESP has no HUD — it's a passive highlighter. The two automation mods (Ceres, Poseidon) have HUDs because they run unattended; ESP doesn't need one.
-- The **gemstone cluster** layer (distance + waypoints on top of Block ESP) is in development and hidden in this release — see the CHANGELOG (planned for 1.1.0).

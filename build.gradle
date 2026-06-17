@@ -1,0 +1,58 @@
+plugins {
+	id 'net.fabricmc.fabric-loom' version '1.16-SNAPSHOT'
+	id 'maven-publish'
+}
+
+version = project.mod_version
+group = project.maven_group
+
+base {
+	archivesName = project.archives_base_name
+}
+
+repositories {
+	mavenLocal()
+	maven {
+		name = 'Terraformers'
+		url = 'https://maven.terraformersmc.com/'
+	}
+	maven {
+		name = 'Xander Maven'
+		url = 'https://maven.isxander.dev/releases'
+	}
+}
+
+dependencies {
+	minecraft "com.mojang:minecraft:${project.minecraft_version}"
+	implementation "net.fabricmc:fabric-loader:${project.loader_version}"
+	implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+	implementation "com.playerapi:playerapi:${project.playerapi_version}"
+	compileOnly "com.terraformersmc:modmenu:${project.modmenu_version}"
+	implementation "dev.isxander:yet-another-config-lib:${project.yacl_version}"
+}
+
+processResources {
+	inputs.property "version", project.version
+	filteringCharset "UTF-8"
+	filesMatching("fabric.mod.json") {
+		expand "version": project.version
+	}
+}
+
+tasks.withType(JavaCompile).configureEach {
+	it.options.release = 25
+	it.options.encoding = "UTF-8"
+}
+
+java {
+	toolchain { languageVersion = JavaLanguageVersion.of(25) }
+	withSourcesJar()
+}
+
+jar {
+	inputs.property "version", project.version
+	from("LICENSE") { rename { "${it}_${project.archives_base_name}" } }
+}
+
+// Suppress "No sources" warning for compileOnly modmenu
+configurations.compileOnly.resolutionStrategy.force "com.terraformersmc:modmenu:${project.modmenu_version}"

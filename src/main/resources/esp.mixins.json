@@ -1,0 +1,13 @@
+{
+  "required": true,
+  "package": "com.esp.mixin",
+  "compatibilityLevel": "JAVA_25",
+  "client": [
+    "EntityGlowMixin",
+    "EntityTeamColorMixin",
+    "ClientPacketListenerMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  }
+}
