@@ -25,24 +25,32 @@ public abstract class EntityTeamColorMixin {
     @Inject(method = "getTeamColor", at = @At("RETURN"), cancellable = true)
     private void esp$overrideGlowColor(CallbackInfoReturnable<Integer> cir) {
         Entity self = (Entity) (Object) this;
+        int id = self.getId();
         EspManager em = EspManager.getInstance();
         EntityEspManager eem = EntityEspManager.getInstance();
-        // Label-matched ESP takes priority; entity-type ESP is the fallback source.
-        Integer override = em.isHighlighted(self.getId()) ? em.getColor(self.getId())
-                : eem.isHighlighted(self.getId()) ? eem.getColor(self.getId())
-                : null;
-        if (override != null) {
-            int color = override;
-            cir.setReturnValue(color);
 
-            if (EspConfig.getInstance().isDebugLogging()) {
-                long now = System.currentTimeMillis();
-                if (now - esp$lastDebugLog > 1000) {
-                    esp$lastDebugLog = now;
-                    System.out.println("[ESP][DEBUG][Render] getTeamColor forced to "
-                            + String.format("#%06X", color) + " for "
-                            + self.getType().toShortString() + " (id=" + self.getId() + ")");
-                }
+        // Label-matched ESP takes priority; entity-type ESP is the fallback source.
+        // Explicit branches (no ternary) so there's no int/Integer mixing — a
+        // conditional that mixes int and null unboxes the whole expression to int
+        // and NPEs on the null path for every non-highlighted entity.
+        int color;
+        if (em.isHighlighted(id)) {
+            color = em.getColor(id);
+        } else if (eem.isHighlighted(id)) {
+            color = eem.getColor(id);
+        } else {
+            return; // not highlighted by either — leave the vanilla team colour
+        }
+
+        cir.setReturnValue(color);
+
+        if (EspConfig.getInstance().isDebugLogging()) {
+            long now = System.currentTimeMillis();
+            if (now - esp$lastDebugLog > 1000) {
+                esp$lastDebugLog = now;
+                System.out.println("[ESP][DEBUG][Render] getTeamColor forced to "
+                        + String.format("#%06X", color) + " for "
+                        + self.getType().toShortString() + " (id=" + id + ")");
             }
         }
     }

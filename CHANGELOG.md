@@ -12,6 +12,16 @@
 
 ---
 
+## [1.0.1] - 2026-06-17
+
+### Hotfix
+- Fixed a crash (`NullPointerException` in `getTeamColor`) that fired whenever an entity **not**
+  highlighted by ESP was rendered — i.e. immediately in any populated area such as a Hypixel lobby.
+  An `int`/`Integer` ternary in `EntityTeamColorMixin` unboxed `null` on the non-highlighted path;
+  rewritten with explicit branches so it can't unbox null.
+
+---
+
 ## [1.0.0]
 
 ### Platform
