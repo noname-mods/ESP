@@ -8,10 +8,6 @@
 
 ---
 
-## AI Session Quick-Start
-
-> **Read this first if you are a new Claude Code session working in this folder.**
-
 ### What this mod is
 
 ESP is a **client-side, passive highlighter** for Hypixel Skyblock. It reads the floating text labels
