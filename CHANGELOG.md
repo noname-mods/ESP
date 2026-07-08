@@ -4,11 +4,40 @@
 
 ---
 
+## [1.0.3] - 2026-07-06
+
+### Added
+- **Mob Type ESP.** A dedicated config section (its own tab, alongside Mob ESP and Block ESP)
+  that highlights mobs by their Hypixel **bestiary type** — Aquatic, Undead, Magmatic, and the
+  other 20. Pick types from a checkbox list (**Select Mob Types**) instead of typing icon codes
+  into a group; each entry shows the type icon. Its own colour, scan radius, and interval; runs
+  through the same label→mob resolve, latch, and overlay as the pattern groups.
+
+### Notes
+- **Requires Hypixel's mandatory resource pack.** Detection reads the custom type glyph the pack
+  stamps on each name plate, so Mob Type ESP highlights nothing until the pack is active
+  client-side. Shipping this ahead of the pack going mandatory is intentional — enable it once the
+  pack is live. (The `\uXXXX` pattern route from 1.0.2 still works for advanced/mixed setups.)
+
+---
+
 ## [1.1.0] — Coming Soon
 
 ### Planned
 - **Gemstone cluster layer** — built on top of Block ESP: groups highlighted blocks into spatial
   clusters, surfaces the nearest one with distance, and renders waypoints.
+
+---
+
+## [1.0.2] - 2026-07-01
+
+### Added
+- **Unicode-escape patterns.** Pattern fields now accept `\uXXXX` escapes — replaced by that
+  character before matching — so you can match custom server glyphs you can't type, such as
+  Hypixel's mandatory-pack mob-type icons (e.g. the escape for U+E072 matches Aquatic mobs).
+- **Mob-type code reference (in-mod).** `/esp types`, and the **Mob Type Codes** button on the
+  Global config tab, print every Hypixel mob type with its `\u` code to chat. Each line is
+  click-to-copy — copy the code and paste it into a group's Patterns field.
 
 ---
 

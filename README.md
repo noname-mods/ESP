@@ -37,7 +37,7 @@ Patterns are comma-separated and case-insensitive:
 - **Plain term** → matches if the label *contains* that word. `magmatic` matches any label containing "magmatic".
 - **Quoted term** → matches only if *all* words inside the quotes appear. `"sea archer"` matches a label containing both "sea" and "archer".
 - **Comma = OR** → `"sea archer", muspelheim` matches a label with both "sea" and "archer", **or** any label containing "muspelheim".
-- **Mob-type symbols** work too — e.g. `⚓` (water sea creature) or `♆` (lava sea creature).
+- **Unicode escapes** → `\uXXXX` is replaced by that character, so you can match custom server glyphs you can't type — like Hypixel's mandatory-pack **mob-type icons** (Aquatic, Undead, Magmatic, …). Run **`/esp types`** in chat, or the **Mob Type Codes** button on the Global config tab, to see every type with its code; click a line to copy it, then paste into a Patterns field.
 
 ### Two-Layer Highlight
 - **Glow outline** — the vanilla glowing effect, visible through walls. Great for locating mobs you can't see yet.
@@ -54,6 +54,11 @@ Once a mob is matched it stays highlighted even if its label briefly stops being
 
 ### Mob ESP
 Highlights every entity of the types you approve — independent of labels, the entity twin of Block ESP. Open the **Select Entity Types** screen from the Mob ESP config tab (searchable checkbox list of every entity type, Clear All). Matched entities get the same glow outline (through walls) and overlay (line of sight) as the label groups. Use this when you want "all zombies" rather than "the mob under a label that says X".
+
+### Mob Type ESP
+Highlights mobs by their Hypixel **bestiary type** (Aquatic, Undead, Magmatic, …) — pick types from a checkbox list on the Mob Type ESP config tab instead of typing icon codes into a group. It reads the custom type glyph Hypixel's resource pack stamps on each name plate and highlights the mob below, using the same glow + overlay as the label groups.
+
+> **Requires Hypixel's resource pack.** Detection keys off the pack's type glyphs, so nothing highlights until the pack is active client-side. (The `\uXXXX` pattern route in a group still works too, for advanced/mixed setups.)
 
 ### Block ESP
 Highlights every instance of the block types you approve, **through walls**. Open the **Select Blocks** screen from the Block ESP config tab — a searchable list of every block in the game with a checkbox each, plus Clear All (selections save as you tick them). Configurable highlight colour, opacity, and scan radius.

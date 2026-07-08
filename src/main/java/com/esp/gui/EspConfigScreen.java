@@ -132,10 +132,26 @@ public class EspConfigScreen {
                                 })
                                 .build())
 
+                        .option(ButtonOption.createBuilder()
+                                .name(Component.literal("Mob Type Codes"))
+                                .description(OptionDescription.of(Component.literal(
+                                        "Hypixel's mob-type icons (Aquatic, Undead, etc.) are\n" +
+                                        "custom glyphs you can't type. This prints every type\n" +
+                                        "with its code to chat — click a line to copy the code,\n" +
+                                        "then paste it into a group's Patterns field.\n\n" +
+                                        "Patterns accept \\uXXXX escapes, so \\uE072 matches the\n" +
+                                        "Aquatic icon. Also available as /esp types.")))
+                                .text(Component.literal("List to chat →"))
+                                .action((screen, opt) -> com.esp.EspMod.printMobTypeCodes())
+                                .build())
+
                         .build());
 
         // ── Mob ESP ───────────────────────────────────────────────────────────
         builder.category(buildEntityEspCategory(cfg));
+
+        // ── Mob Type ESP ──────────────────────────────────────────────────────
+        builder.category(buildMobTypeEspCategory(cfg));
 
         // ── Block ESP ─────────────────────────────────────────────────────────
         builder.category(buildBlockEspCategory(cfg));
@@ -215,6 +231,82 @@ public class EspConfigScreen {
                                 "highlights tracking smoothly. Raise to reduce overhead.")))
                         .binding(10, () -> e.scanIntervalTicks,
                                 v -> { e.scanIntervalTicks = v; cfg.save(); })
+                        .controller(opt -> IntegerSliderControllerBuilder.create(opt)
+                                .range(1, 100).step(1))
+                        .build())
+
+                .build();
+    }
+
+    // ── Mob Type ESP category builder ─────────────────────────────────────────
+
+    private static ConfigCategory buildMobTypeEspCategory(EspConfig cfg) {
+        EspConfig.MobTypeEspSettings m = cfg.getMobTypeEspSettings();
+        return ConfigCategory.createBuilder()
+                .name(Component.literal("Mob Type ESP"))
+                .tooltip(Component.literal(
+                        "Highlights mobs by their Hypixel bestiary TYPE (Aquatic,\n" +
+                        "Undead, …). Pick types from a list instead of typing icon\n" +
+                        "codes into a group.\n\n" +
+                        "Requires Hypixel's resource pack — detection reads the\n" +
+                        "custom type glyph the pack stamps on each name plate, so\n" +
+                        "nothing highlights until the pack is active."))
+
+                .option(Option.<Boolean>createBuilder()
+                        .name(Component.literal("Enabled"))
+                        .description(OptionDescription.of(Component.literal(
+                                "Master toggle for mob-type ESP. When on, every mob whose\n" +
+                                "name plate carries a selected type's icon gets the glow\n" +
+                                "outline (through walls) plus the depth-tested overlay (in\n" +
+                                "line of sight, if the global Highlight Overlay is on).\n\n" +
+                                "Needs Hypixel's resource pack loaded — the type icons are\n" +
+                                "pack glyphs, so without it there is nothing to match.")))
+                        .binding(false, () -> m.enabled, v -> { m.enabled = v; cfg.save(); })
+                        .controller(BooleanControllerBuilder::create)
+                        .build())
+
+                .option(ButtonOption.createBuilder()
+                        .name(Component.literal("Select Mob Types"))
+                        .description(OptionDescription.of(Component.literal(
+                                "Open the list of all 23 bestiary types. Tick the ones to\n" +
+                                "highlight; Clear All empties the selection. Each entry\n" +
+                                "shows the type icon (visible with the pack loaded).\n" +
+                                "Changes save as you go.")))
+                        .text(Component.literal("Open type list →"))
+                        .action((screen, opt) ->
+                                Minecraft.getInstance().setScreen(new MobTypeEspScreen(screen)))
+                        .build())
+
+                .option(Option.<java.awt.Color>createBuilder()
+                        .name(Component.literal("Highlight Color"))
+                        .description(OptionDescription.of(Component.literal(
+                                "Colour of the glow outline and overlay for matched mobs.")))
+                        .binding(
+                                new java.awt.Color(m.color),
+                                () -> new java.awt.Color(m.color),
+                                v -> { m.color = v.getRGB() & 0xFFFFFF; cfg.save(); })
+                        .controller(ColorControllerBuilder::create)
+                        .build())
+
+                .option(Option.<Double>createBuilder()
+                        .name(Component.literal("Scan Radius (blocks)"))
+                        .description(OptionDescription.of(Component.literal(
+                                "How far from the player to scan for name-plate labels\n" +
+                                "carrying a selected type icon. Bounded by the server's\n" +
+                                "entity-tracking range (~40–48 on Hypixel); labels often\n" +
+                                "stop arriving even sooner.")))
+                        .binding(16.0, () -> m.scanRadius, v -> { m.scanRadius = v; cfg.save(); })
+                        .controller(opt -> DoubleSliderControllerBuilder.create(opt)
+                                .range(4.0, 48.0).step(2.0))
+                        .build())
+
+                .option(Option.<Integer>createBuilder()
+                        .name(Component.literal("Scan Interval (ticks)"))
+                        .description(OptionDescription.of(Component.literal(
+                                "Ticks between scans. Mobs move, so 10 (0.5 s) keeps\n" +
+                                "highlights tracking smoothly. Raise to reduce overhead.")))
+                        .binding(10, () -> m.scanIntervalTicks,
+                                v -> { m.scanIntervalTicks = v; cfg.save(); })
                         .controller(opt -> IntegerSliderControllerBuilder.create(opt)
                                 .range(1, 100).step(1))
                         .build())
@@ -405,7 +497,10 @@ public class EspConfigScreen {
                                 "Combined:  \"sea archer\", muspelheim\n" +
                                 "  → highlight if text has both words in 'sea archer'\n" +
                                 "    OR if text contains 'muspelheim'\n\n" +
-                                "Mob type symbols work too:  ⚓, ♆")))
+                                "Unicode escape  →  \\uXXXX becomes that character\n" +
+                                "  Use it for Hypixel's mob-type icons you can't type,\n" +
+                                "  e.g. \\uE072 matches Aquatic mobs. See the full list\n" +
+                                "  via /esp types or the Mob Type Codes button (Global tab).")))
                         .binding("", () -> group.patterns, v -> { group.patterns = v; cfg.save(); })
                         .controller(StringControllerBuilder::create)
                         .build())

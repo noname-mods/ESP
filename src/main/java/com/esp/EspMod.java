@@ -153,6 +153,11 @@ public class EspMod implements ClientModInitializer {
                                 .executes(ctx -> {
                                     dismissCompatWarning();
                                     return 1;
+                                }))
+                        .then(ClientCommands.literal("types")
+                                .executes(ctx -> {
+                                    printMobTypeCodes();
+                                    return 1;
                                 }))));
 
         // Fallback: fires when ClientCommandManager did NOT handle the command
@@ -163,12 +168,39 @@ public class EspMod implements ClientModInitializer {
                 dismissCompatWarning();
                 return false; // suppress — don't send to server
             }
+            if (c.equalsIgnoreCase("esp types")) {
+                printMobTypeCodes();
+                return false; // suppress — don't send to server
+            }
             if (c.equalsIgnoreCase("esp")) {
                 openConfigNextTick = true;
                 return false; // suppress — don't send to server
             }
             return true;
         });
+    }
+
+    /**
+     * Prints every Hypixel mob-type icon to chat with its {@code \\u} code. Each line is
+     * click-to-copy so the user can paste the code into a group's Patterns field. Shared
+     * by {@code /esp types} and the "Mob Type Codes" config button.
+     */
+    public static void printMobTypeCodes() {
+        Minecraft mc = Minecraft.getInstance();
+        if (mc.player == null || mc.gui == null) return;
+        var chat = mc.gui.getChat();
+        chat.addClientSystemMessage(Component.literal(
+                "[ESP] Mob-type codes — click a line to copy its code, then paste it into a group's Patterns field:")
+                .withStyle(ChatFormatting.AQUA));
+        for (com.esp.core.MobTypes.Type t : com.esp.core.MobTypes.ALL) {
+            String esc = t.escape();
+            chat.addClientSystemMessage(Component.literal("  " + t.glyph() + " " + t.name() + "  §8" + esc)
+                    .withStyle(s -> s
+                            .withColor(ChatFormatting.GRAY)
+                            .withClickEvent(new ClickEvent.CopyToClipboard(esc))
+                            .withHoverEvent(new HoverEvent.ShowText(Component.literal(
+                                    "Click to copy " + esc + "  (" + t.hex() + ")")))));
+        }
     }
 
     /** Suppresses future renderer-compatibility warnings (set via the chat link or {@code /esp nowarn}). */

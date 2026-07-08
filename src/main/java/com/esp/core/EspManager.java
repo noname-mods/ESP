@@ -73,6 +73,16 @@ public class EspManager {
     private Object lastLevel = null;
 
     /**
+     * Synthetic, non-persisted group backing the "Mob Type ESP" section. It is not
+     * one of the ten user groups — each tick it's re-synced from
+     * {@link EspConfig.MobTypeEspSettings} (colour, radius, interval, and a pattern
+     * string of the selected type glyphs) and, when active, appended to the scan
+     * list so it flows through the exact same label→mob resolve / latch / overlay
+     * path as the pattern groups. Kept as a field so its latch survives between ticks.
+     */
+    private final EspGroup mobTypeGroup = new EspGroup();
+
+    /**
      * Entity ID → packed RGB glow colour for every currently highlighted entity.
      * Replaced atomically each tick; render thread reads are always consistent.
      */
@@ -91,10 +101,7 @@ public class EspManager {
         if (!cfg.isGlobalEnabled() || !PlayerInfo.isInWorld()) {
             if (!highlighted.isEmpty()) {
                 highlighted = Map.of();
-                for (EspGroup g : cfg.getGroups()) {
-                    g.cachedHighlighted.clear();
-                    g.latchExpiry.clear();
-                }
+                wipeAllLatches(cfg);
             }
             lastLevel = null;
             EntityHighlightActions.clearOwner(OVERLAY_OWNER);
@@ -111,10 +118,7 @@ public class EspManager {
         // entity that the new instance happens to assign the same ID.
         if (mc.level != lastLevel) {
             lastLevel = mc.level;
-            for (EspGroup g : cfg.getGroups()) {
-                g.cachedHighlighted.clear();
-                g.latchExpiry.clear();
-            }
+            wipeAllLatches(cfg);
             highlighted = Map.of();
             EntityHighlightActions.clearOwner(OVERLAY_OWNER);
         }
@@ -129,12 +133,17 @@ public class EspManager {
             }
         }
 
+        // Sync the synthetic Mob-Type group and include it when active. Done before
+        // the empty-check so its radius contributes to the single entity fetch.
+        EspGroup mtg = syncMobTypeGroup(cfg);
+        if (mtg != null) {
+            activeGroups.add(mtg);
+            if (mtg.scanRadius > maxRadius) maxRadius = mtg.scanRadius;
+        }
+
         if (activeGroups.isEmpty()) {
             if (!highlighted.isEmpty()) highlighted = Map.of();
-            for (EspGroup g : cfg.getGroups()) {
-                g.cachedHighlighted.clear();
-                g.latchExpiry.clear();
-            }
+            wipeAllLatches(cfg);
             EntityHighlightActions.clearOwner(OVERLAY_OWNER);
             return;
         }
@@ -340,6 +349,40 @@ public class EspManager {
     }
 
     // ── Helpers ───────────────────────────────────────────────────────────────
+
+    /** Clears every group's latch state — the ten user groups plus the synthetic Mob-Type group. */
+    private void wipeAllLatches(EspConfig cfg) {
+        for (EspGroup g : cfg.getGroups()) {
+            g.cachedHighlighted.clear();
+            g.latchExpiry.clear();
+        }
+        mobTypeGroup.cachedHighlighted.clear();
+        mobTypeGroup.latchExpiry.clear();
+    }
+
+    /**
+     * Re-syncs {@link #mobTypeGroup} from {@link EspConfig.MobTypeEspSettings} and
+     * returns it when it should scan this tick, or {@code null} when the feature is
+     * off / no types are selected (its latch is cleared in that case). The pattern
+     * string is the selected types' literal glyphs (see {@link MobTypes#patternFor}),
+     * so it matches any name plate carrying one of those pack icons.
+     */
+    private EspGroup syncMobTypeGroup(EspConfig cfg) {
+        EspConfig.MobTypeEspSettings s = cfg.getMobTypeEspSettings();
+        String pattern = MobTypes.patternFor(s.types);
+        if (!s.enabled || pattern.isEmpty()) {
+            mobTypeGroup.cachedHighlighted.clear();
+            mobTypeGroup.latchExpiry.clear();
+            return null;
+        }
+        mobTypeGroup.enabled           = true;
+        mobTypeGroup.name              = "Mob Types";
+        mobTypeGroup.patterns          = pattern;
+        mobTypeGroup.color             = s.color;
+        mobTypeGroup.scanRadius        = s.scanRadius;
+        mobTypeGroup.scanIntervalTicks = s.scanIntervalTicks;
+        return mobTypeGroup;
+    }
 
     /**
      * Returns the plain-text content of a label entity, or {@code null} if this

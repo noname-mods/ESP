@@ -17,13 +17,17 @@ import java.util.stream.Collectors;
  *       {@code "magmatic"} (case-insensitive).</li>
  *   <li><b>Quoted token</b> — {@code "one two three"} — matches if ALL space-separated
  *       words inside the quotes appear anywhere in the label text.</li>
+ *   <li><b>Unicode escape</b> — {@code \\uXXXX} (4 hex) is replaced by that character
+ *       anywhere in the pattern. Use it to match custom server glyphs you can't type,
+ *       such as Hypixel's mob-type icons (run {@code /esp types} for the list).</li>
  * </ul>
  *
  * <h3>Examples</h3>
  * <pre>
  *   one, two, three          → true if text contains "one" OR "two" OR "three"
  *   "one two three", two     → true if (text has all of one+two+three) OR (text has "two")
- *   ⚓, ♆                   → true if text contains the water anchor OR the lava trident
+ *   \\uE072                   → matches the Aquatic mob-type icon (U+E072)
+ *   \\uE072, \\uE07D           → matches the Aquatic OR Magmatic icon
  * </pre>
  */
 public class PatternMatcher {
@@ -54,6 +58,10 @@ public class PatternMatcher {
         List<Token> result = new ArrayList<>();
         if (raw == null || raw.isBlank()) return result;
 
+        // Turn unicode escapes into the actual character before any other parsing, so
+        // users can enter glyphs they can't type (e.g. Hypixel's mob-type PUA icons).
+        raw = unescapeUnicode(raw);
+
         for (String part : splitByComma(raw)) {
             String trimmed = part.strip();
             if (trimmed.isEmpty()) continue;
@@ -72,6 +80,38 @@ public class PatternMatcher {
             }
         }
         return result;
+    }
+
+    /**
+     * Replaces every {@code \\uXXXX} (backslash, 'u'/'U', exactly 4 hex digits) with the
+     * corresponding character. Sequences that aren't a valid escape are left untouched.
+     */
+    private static String unescapeUnicode(String s) {
+        if (s.indexOf('\\') < 0) return s; // fast path — no escapes present
+        StringBuilder out = new StringBuilder(s.length());
+        int i = 0;
+        while (i < s.length()) {
+            char c = s.charAt(i);
+            if (c == '\\' && i + 6 <= s.length()
+                    && (s.charAt(i + 1) == 'u' || s.charAt(i + 1) == 'U')
+                    && isHex(s, i + 2, 4)) {
+                out.append((char) Integer.parseInt(s.substring(i + 2, i + 6), 16));
+                i += 6;
+            } else {
+                out.append(c);
+                i++;
+            }
+        }
+        return out.toString();
+    }
+
+    private static boolean isHex(String s, int from, int count) {
+        for (int k = 0; k < count; k++) {
+            char h = s.charAt(from + k);
+            boolean hex = (h >= '0' && h <= '9') || (h >= 'a' && h <= 'f') || (h >= 'A' && h <= 'F');
+            if (!hex) return false;
+        }
+        return true;
     }
 
     /** Splits on commas that are not inside double-quoted sections. */

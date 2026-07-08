@@ -35,3 +35,6 @@ Test Logs/
 
 # ── Claude related files ────────────────────────────────────────
 MIGRATION.md
+
+# ── Claude Code / agent reference (local only) ──
+CLAUDE.md

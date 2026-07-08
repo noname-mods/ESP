@@ -98,6 +98,35 @@ public class EspConfig {
         public int     color             = 0xFF5555;
     }
 
+    // ── Mob-type ESP settings ──────────────────────────────────────────────────
+
+    /**
+     * Highlights mobs by their Hypixel <em>bestiary type</em> (Aquatic, Undead, …).
+     * The mandatory resource pack stamps each mob's name plate with a custom
+     * Private-Use-Area glyph per type; this feature scans those labels for the
+     * selected types' glyphs and highlights the mob below — the friendly,
+     * checkbox-picked twin of typing {@code \\uXXXX} escapes into a group pattern.
+     *
+     * <p><b>Requires the pack.</b> Detection keys off the pack glyphs, so nothing
+     * is highlighted until Hypixel's resource pack is active client-side.</p>
+     *
+     * <p>Runs through the same label→mob scan, latch and overlay as the pattern
+     * groups (see {@code EspManager}), so it reuses the global label search radius
+     * and Highlight Overlay settings.</p>
+     */
+    public static class MobTypeEspSettings {
+        /** Master toggle for mob-type ESP. */
+        public boolean enabled           = false;
+        /** Selected type names, e.g. {@code "Aquatic"} (see {@code MobTypes.ALL}). */
+        public List<String> types        = new ArrayList<>();
+        /** Glow / overlay colour as packed RGB (no alpha). */
+        public int     color             = 0x55FF55;
+        /** Half-extent of the label search box around the player. */
+        public double  scanRadius        = 16.0;
+        /** Ticks between scans — 10 (0.5 s) tracks moving mobs smoothly. */
+        public int     scanIntervalTicks = 10;
+    }
+
     // ── Persisted fields ──────────────────────────────────────────────────────
 
     public boolean       globalEnabled     = false;
@@ -107,6 +136,7 @@ public class EspConfig {
     public GemstoneSettings gemstone       = new GemstoneSettings();
     public BlockEspSettings blockEsp       = new BlockEspSettings();
     public EntityEspSettings entityEsp     = new EntityEspSettings();
+    public MobTypeEspSettings mobTypeEsp   = new MobTypeEspSettings();
     /**
      * When true, EspManager / GemstoneEspManager print scan diagnostics to the
      * game log: entity/label counts, per-group match results, and the nearest
@@ -159,6 +189,10 @@ public class EspConfig {
                     if (loaded.entityEsp != null) {
                         this.entityEsp = loaded.entityEsp;
                         if (this.entityEsp.entities == null) this.entityEsp.entities = new ArrayList<>();
+                    }
+                    if (loaded.mobTypeEsp != null) {
+                        this.mobTypeEsp = loaded.mobTypeEsp;
+                        if (this.mobTypeEsp.types == null) this.mobTypeEsp.types = new ArrayList<>();
                     }
                     this.debugLogging      = loaded.debugLogging;
                     this.overlayEnabled    = loaded.overlayEnabled;
@@ -219,6 +253,8 @@ public class EspConfig {
     public BlockEspSettings getBlockEspSettings() { return blockEsp; }
 
     public EntityEspSettings getEntityEspSettings() { return entityEsp; }
+
+    public MobTypeEspSettings getMobTypeEspSettings() { return mobTypeEsp; }
 
     public boolean isDebugLogging()               { return debugLogging; }
     public void    setDebugLogging(boolean v)     { debugLogging = v; save(); }
