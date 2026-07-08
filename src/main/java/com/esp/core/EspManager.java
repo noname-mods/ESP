@@ -83,6 +83,13 @@ public class EspManager {
     private final EspGroup mobTypeGroup = new EspGroup();
 
     /**
+     * The selected-type list the {@link #mobTypeGroup} pattern was last built from.
+     * The glyph pattern is rebuilt only when this changes, so the per-tick sync
+     * skips the String build + registry-name lookups when the selection is stable.
+     */
+    private List<String> mobTypeKey = null;
+
+    /**
      * Entity ID → packed RGB glow colour for every currently highlighted entity.
      * Replaced atomically each tick; render thread reads are always consistent.
      */
@@ -369,15 +376,24 @@ public class EspManager {
      */
     private EspGroup syncMobTypeGroup(EspConfig cfg) {
         EspConfig.MobTypeEspSettings s = cfg.getMobTypeEspSettings();
-        String pattern = MobTypes.patternFor(s.types);
-        if (!s.enabled || pattern.isEmpty()) {
+        if (!s.enabled || s.types == null || s.types.isEmpty()) {
+            mobTypeGroup.cachedHighlighted.clear();
+            mobTypeGroup.latchExpiry.clear();
+            return null;
+        }
+        // Rebuild the glyph pattern only when the selection changes — avoids a
+        // per-tick String build + name→glyph lookups when it's stable.
+        if (!s.types.equals(mobTypeKey)) {
+            mobTypeGroup.patterns = MobTypes.patternFor(s.types);
+            mobTypeKey = new ArrayList<>(s.types);
+        }
+        if (mobTypeGroup.patterns.isEmpty()) { // selection resolved to no known glyphs
             mobTypeGroup.cachedHighlighted.clear();
             mobTypeGroup.latchExpiry.clear();
             return null;
         }
         mobTypeGroup.enabled           = true;
         mobTypeGroup.name              = "Mob Types";
-        mobTypeGroup.patterns          = pattern;
         mobTypeGroup.color             = s.color;
         mobTypeGroup.scanRadius        = s.scanRadius;
         mobTypeGroup.scanIntervalTicks = s.scanIntervalTicks;

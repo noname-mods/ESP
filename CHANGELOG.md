@@ -4,6 +4,16 @@
 
 ---
 
+## [1.0.4] - 2026-07-08
+
+### Fixed
+- **Restored a Mob Type ESP optimization intended for 1.0.3.** The scan loop now rebuilds its
+  internal glyph pattern only when the selected types change, rather than every tick — removing a
+  per-tick allocation and repeated registry-name lookups. This was meant to ship in 1.0.3 but was
+  mistakenly dropped at the last second; no behavioural change.
+
+---
+
 ## [1.0.3] - 2026-07-06
 
 ### Added

@@ -1,6 +1,6 @@
 # ESP — Design & Documentation
 
-**Version:** 1.0.3
+**Version:** 1.0.4
 **Platform:** Fabric 26.1.2, Java 25
 **Dependencies:** PlayerAPI 1.12.0+, Fabric API, YACL v3, ModMenu (optional)
 **Mod ID:** `esp`
@@ -172,10 +172,10 @@ Minecraft version string.
 ## Build & test
 
 ```
-./gradlew build              # produces build/libs/esp-1.0.3.jar
+./gradlew build              # produces build/libs/esp-1.0.4.jar
 ./gradlew runClient          # dev client
 ```
 
 Remember the build order: if PlayerAPI changed, `publishToMavenLocal` it first. Copy both
-`esp-1.0.3.jar` **and** a matching `playerapi-1.12.0.jar` into a test instance's mods folder — an
+`esp-1.0.4.jar` **and** a matching `playerapi-1.12.0.jar` into a test instance's mods folder — an
 older PlayerAPI will fail the `>=1.12.0` dependency (or, if forced, crash on `BlockHighlightActions` / `EntityHighlightActions`).
